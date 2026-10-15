@@ -1,0 +1,55 @@
+services:
+  valheim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    image: valheim-arm64:local
+    container_name: valheim-arm64-server
+    restart: unless-stopped
+    networks:
+      - tailscale-ds
+    
+    # Crucial: Allow server 40-60 seconds to save world data before forcing a kill
+    stop_grace_period: 60s
+    
+    # Optional performance boost for Steam library thread priority
+    cap_add:
+      - SYS_NICE
+      
+    ports:
+      - "2456-2457:2456-2457/udp"
+      
+    environment:
+      - SERVER_NAME=Viking Realm ARM64
+      - WORLD_NAME=Valhalla
+      - SERVER_PASS=b2slibog
+      - SERVER_PORT=2456
+      - SERVER_PUBLIC=0
+      - CROSSPLAY=0
+      - UPDATE_ON_START=true
+
+      # --- Combat / difficulty (world modifiers) ---
+      # Preset is applied first; individual modifiers below override it.
+      # Leave a value empty to keep that setting at the Vanilla default.
+      - WORLD_PRESET=                    # Normal|Casual|Easy|Hard|Hardcore|Immersive|Hammer
+      - COMBAT_DIFFICULTY=hard           # veryeasy|easy|hard|veryhard
+      - DEATH_PENALTY=                   # casual|veryeasy|easy|hard|hardcore (skill loss + tombstone)
+      - RESOURCES=more                   # muchless|less|more|muchmore|most (drop rates)
+      - RAIDS=                           # none|muchless|less|more|muchmore (base-attack frequency)
+      - PORTALS=                         # casual|hard|veryhard (what may pass through portals)
+      
+    volumes:
+      - ./config:/config
+      - ./server_files:/home/steam/valheim
+      - ./steamcmd:/home/steam/steamcmd   # persists steamcmd binary + its self-updates
+      - ./steamconf/Steam:/home/steam/Steam
+      - ./steamconf/.steam:/home/steam/.steam
+      # Bind the entry scripts so runtime fixes take effect without an image rebuild.
+      # NOTE: both files must be executable (chmod +x) on the host.
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+      - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+
+networks:
+  tailscale-ds:
+    external: true

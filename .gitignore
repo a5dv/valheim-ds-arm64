@@ -1,0 +1,18 @@
+# Game/server runtime data (reproducible/downloaded)
+server_files/
+steamcmd/package/
+steamcmd/siteserverui/
+steamcmd/linux32/
+steamcmd/linux64/
+steamconf/Steam/appcache/
+steamconf/Steam/logs/
+config/worlds_local/
+config/cache/
+
+# Backups/logs
+*.tgz
+*.log
+
+# OS/editor cruft
+*.swp
+.DS_Store
